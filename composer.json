@@ -1,6 +1,6 @@
 {
     "name": "opensite/pexcel",
-    "description": "excel library request for php",
+    "description": "excel library for php",
     "keywords": [
         "excel",
         "pexcel",
@@ -15,7 +15,6 @@
             "name": "luckylsx"
         }
     ],
-    "minimum-stability": "stable",
     "require": {
         "php": ">=5.6",
         "phpoffice/phpspreadsheet": "^1.4"
