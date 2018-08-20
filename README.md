@@ -1,5 +1,5 @@
 ## pexcel
-Http request for php
+Excel library for php
 
 ### Requirement
 
