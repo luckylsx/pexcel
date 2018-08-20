@@ -6,9 +6,9 @@
  * Time: 21:39
  */
 
-namespace pexcel;
+namespace Opensite\Pexcel;
 
-use pexcel\FactoryExcel;
+use Opensite\Pexcel\FactoryExcel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 /**

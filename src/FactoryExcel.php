@@ -6,7 +6,7 @@
  * Time: 21:48
  */
 
-namespace pexcel;
+namespace Opensite\Pexcel;
 
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
