@@ -9,10 +9,5 @@
         "phpunit/phpunit": "6.0"
     },
     "license": "MIT",
-    "minimum-stability": "stable",
-	"autoload": {
-        "psr-4": {
-            "Opensite\\": "src/"
-        }
-    }
+    "minimum-stability": "stable"
 }
