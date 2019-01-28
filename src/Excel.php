@@ -54,6 +54,11 @@ class Excel
      * Excel constructor.
      * @param $Type string 导出类型
      * @param $fileName string 文件名
+     * @param $config array 相关配置信息 如：
+     * [
+     *      'merge' => ['A18:E22'], //单元格合并
+     *      'width' => ['A'=>12,'B'=>12]
+     * ]
      * @throws \Exception
      */
     public function __construct($Type, $fileName, $config = [])
@@ -65,8 +70,8 @@ class Excel
         $this->spreadsheet = new Spreadsheet();
         $this->fileName = $fileName . "." . strtolower($Type);
         $this->excel = FactoryExcel::factory($Type, $this->spreadsheet);
-        $this->forms = range('A', 'Z');
-
+        //相关配置
+        $this->config = $config;
     }
 
     /**
@@ -92,20 +97,25 @@ class Excel
         if (empty($data)) {
             throw new \Exception('导出数据为空！');
         }
+        //根据数据长度 设置单元格列数
+        $cls = ceil($data[0]%24);
+        $this->forms = $this->setForms($cls);
+
         $this->setHeader();
         $sheet = $this->spreadsheet->getActiveSheet();
         //合并单元格
         $config = $this->config;
-        if (isset($config['merge']) && !empty($config['merge'])) {
-            foreach ($config['merge'] as $value) {
-                $sheet->mergeCells($value);
-            }
-        }
+        //设置单元格格式
+        $this->setColumnStyle($sheet,$config);
         //设置单元格标题
         $sheet->setTitle($sheetName);
         //填充单元格数据
-        for ($i = 0; $i < count($data); $i++) {
-            for ($j = 0; $j < count($data[$i]); $j++) {
+        //总行数
+        $rows = count($data);
+        for ($i = 0; $i < $rows; $i++) {
+            //列数
+            $columns = count($data[$i]);
+            for ($j = 0; $j < $columns; $j++) {
                 $num = $i + 1;
                 $cell = $this->forms[$j] . "$num";
                 $sheet->setCellValue($cell, $data[$i][$j]);
@@ -137,10 +147,14 @@ class Excel
      */
     public function exportSheets($data, $sheets = [])
     {
-
         if (empty($data)) {
             throw new \Exception('导出数据为空！');
         }
+        //根据数据长度 设置单元格列数
+        $cls = ceil($data[0]%24);
+        //设置单元格样式
+        $this->forms = $this->setForms($cls);
+
         $this->setHeader();
         if (is_array($sheets) && !empty($sheets)) {
             foreach ($sheets as $index => $sheetName) {
@@ -163,7 +177,8 @@ class Excel
      */
     private function setCell($data, $sheetName = '')
     {
-        for ($index = 0; $index < count($data); $index++) {
+        $total_rows = count($data);
+        for ($index = 0; $index < $total_rows; $index++) {
             if ($index == 0) {
                 $sheet = $this->spreadsheet->getActiveSheet();
             } else {
@@ -177,6 +192,54 @@ class Excel
                     $num = $i + 1;
                     $cell = $this->forms[$j] . "$num";
                     $sheet->setCellValue($cell, $data[$index][$i][$j]);
+                }
+            }
+        }
+    }
+
+    /**
+     * $forms 共有多少个 1：A-Z; 2:A-AZ 3:A-BZ ...
+     * 设置单元格列数
+     */
+    private function setForms($forms = 1)
+    {
+        $fms = range('A','Z');
+        if ($forms > 1){
+            $totalForms = [];
+            for ($i=0;$i<$forms-1;$i++){
+                $totalForms[] = array_map(function ($wd) use($fms,$forms,$i){
+                    return $fms[$i] .$wd;
+                },$fms);
+            }
+            foreach ($totalForms as $fm){
+                $fms = array_merge($fms,array_values($fm));
+            }
+            return $fms;
+        }else{
+            return $fms;
+        }
+    }
+
+    /**
+     * 设置单元格样式
+     * @param $obj object 活动页对象
+     * @param $config array 相关配置信息
+     */
+    private function setColumnStyle($obj,$config = [])
+    {
+        if ($config){
+            foreach ($config as $type=>$items){
+                //$type 为 merge 即合并单元格 设置单元格合并
+                if ($type === 'merge'){
+                    foreach ($config['merge'] as $value) {
+                        $obj->mergeCells($value);
+                    }
+                }
+                //$type 为 merge 即合并单元格 设置单元格合并
+                if ($type === 'width'){
+                    foreach ($config['width'] as $col=>$value) {
+                        $obj->getColumnDimension($col)->setWidth($value);
+                    }
                 }
             }
         }
